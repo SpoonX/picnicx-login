@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="/styles/bootstrap.css">
+    <link rel="stylesheet" href="/styles/login.css">
+</head>
+<body>
+<div class="container">
+    <div class="login-container">
+        <div id="output"></div>
+        <div class="avatar"></div>
+        <div class="form-box">
+            <form action="" method="">
+                <input name="user" type="text" id="username" placeholder="Gebruikersnaam">
+                <input type="password" id="password" placeholder="wachtwoord">
+                <button class="btn btn-primary btn-block login" type="submit">Inloggen</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" data-main="scripts/main" src="/scripts/jquery.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        var $username = $('#username'),
+            $output = $("#output"),
+            $password = $('#password'),
+            backend = '//api.picnicx.com',
+            domain = location.hostname.match(/\.?(([^.]+)\.[^.]+.?)$/)[1];
+
+        function showNotification (message, type) {
+            type = type !== 'success' ? 'danger' : 'success';
+
+            $output.removeClass(' alert alert-success alert-danger');
+            $output.addClass("alert alert-" + type + " animated fadeInUp").html(message);
+        }
+
+        $('button[type="submit"]').click(function (e) {
+            e.preventDefault();
+            $.post(backend+'/user/authenticate', {username: $username.val(), password: $password.val()}, function (response) {
+                if (response.error) {
+                    return showNotification(response.error);
+                }
+
+                // Set cookie
+                var d = new Date();
+
+                d.setYear(d.getFullYear() + 10);
+
+                if (response.website.host !== domain && false) {
+                    return showNotification('Server fout! Neem contact op met SpoonX.');
+                }
+
+                document.cookie='sx_jwt='+encodeURIComponent(response.token)+';path=/;expires='+d+';domain=.'+domain;
+
+                window.top.location.href = '//' + domain;
+            }).error(function (error) {
+              showNotification('Ongeldige login');
+            });
+        });
+    });
+
+</script>
+</body>
+</html>
